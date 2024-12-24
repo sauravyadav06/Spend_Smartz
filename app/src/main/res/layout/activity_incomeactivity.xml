@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/lightgreen"
+    android:background="@color/white"
     tools:context=".IncomeActivity">
 
     <!-- Header Section -->
@@ -14,12 +14,12 @@
         android:id="@+id/tv_income_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
         android:text="Add Income"
         android:textColor="@color/black"
-        android:textSize="24sp"
+        android:textSize="26sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -31,7 +31,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         app:cardCornerRadius="16dp"
-        app:cardElevation="10dp"
+        app:cardElevation="12dp"
+        app:cardBackgroundColor="@color/lightgreen"
         app:layout_constraintTop_toBottomOf="@id/tv_income_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -40,12 +41,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
+            <!-- Income Amount -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter Income Amount">
+                android:hint="Enter Income Amount"
+                app:boxBackgroundColor="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_income_amount"
@@ -54,23 +57,65 @@
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Income Category -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:hint="Enter Income Category">
+                android:layout_marginTop="12dp"
+                android:hint="Select Category"
+                app:boxBackgroundColor="@color/white"
+                app:boxStrokeColor="@color/black"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:boxCornerRadiusTopStart="8dp"
+                app:boxCornerRadiusTopEnd="8dp"
+                app:boxCornerRadiusBottomStart="8dp"
+                app:boxCornerRadiusBottomEnd="8dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_income_category"
+                <!-- Horizontal layout to hold Spinner and Add button side by side -->
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Spinner for selecting category -->
+                    <Spinner
+                        android:id="@+id/spinner_income_category"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@android:color/white"
+                        android:padding="12dp"
+                        android:spinnerMode="dropdown"
+                        android:layout_gravity="center_vertical"
+                        android:prompt="@string/select_category" />
+
+                    <!-- Add Category Button next to Spinner -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_add_category"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="@color/black"
+                        android:text="Add"
+                        android:textColor="@android:color/white"
+                        app:cornerRadius="8dp"
+                        app:icon="@drawable/ic_add"
+                        app:iconGravity="textStart"
+                        android:minWidth="40dp"
+                        android:minHeight="40dp"/>
+                </LinearLayout>
+
             </com.google.android.material.textfield.TextInputLayout>
 
+
+            <!-- Description -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:hint="Enter Description">
+                android:layout_marginTop="12dp"
+                android:hint="Enter Description"
+                app:boxBackgroundColor="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_income_description"
@@ -78,11 +123,13 @@
                     android:layout_height="wrap_content" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Date -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:hint="Select Date">
+                android:layout_marginTop="12dp"
+                android:hint="Select Date"
+                app:boxBackgroundColor="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_income_date"
@@ -92,15 +139,16 @@
                     android:focusable="false" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Save Income Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_save_income"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="20dp"
                 android:text="Save Income"
                 android:backgroundTint="@color/black"
                 android:textColor="@android:color/white"
-                app:cornerRadius="8dp" />
+                app:cornerRadius="10dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
