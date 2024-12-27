@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvIncomeValue: TextView
     private lateinit var tvExpenseValue: TextView
     private lateinit var tvTotalBalance: TextView // TextView for total balance
+    private lateinit var seeall:TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +45,13 @@ class MainActivity : AppCompatActivity() {
         tvIncomeValue = findViewById(R.id.tv_income_value)
         tvExpenseValue = findViewById(R.id.tv_expense_value) // Add TextView for expense
         tvTotalBalance = findViewById(R.id.tv_total_balance) // TextView for total balance
+        seeall= findViewById(R.id.tv_see_all)
+
+        seeall.setOnClickListener {
+            val intent = Intent(this, TransactionListActivity::class.java)
+            startActivity(intent)
+        }
+
 
         // Set up click listeners for navigating to Income and Expense activities
         btnIncome.setOnClickListener {
