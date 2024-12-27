@@ -7,12 +7,17 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class TransactionAdapter(private val transactions: List<Transaction>) : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
+class TransactionAdapter(private var transactions: List<Transaction>) : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
         // Inflate the layout for each item in the RecyclerView
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_transaction, parent, false)
         return TransactionViewHolder(view)
+    }
+
+    fun updateData(newTransactions: List<Transaction>) {
+        transactions = newTransactions
+        notifyDataSetChanged()
     }
 
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {

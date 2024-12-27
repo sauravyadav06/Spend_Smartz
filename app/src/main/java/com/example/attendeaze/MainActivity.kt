@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvExpenseValue: TextView
     private lateinit var tvTotalBalance: TextView // TextView for total balance
     private lateinit var seeall:TextView
+    private lateinit var analysis: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         tvExpenseValue = findViewById(R.id.tv_expense_value) // Add TextView for expense
         tvTotalBalance = findViewById(R.id.tv_total_balance) // TextView for total balance
         seeall= findViewById(R.id.tv_see_all)
+        analysis= findViewById(R.id.btn_analytics)
 
         seeall.setOnClickListener {
             val intent = Intent(this, TransactionListActivity::class.java)
@@ -61,6 +63,11 @@ class MainActivity : AppCompatActivity() {
 
         btnOutcome.setOnClickListener {
             val intent = Intent(this, ExpenseActivity::class.java)
+            startActivity(intent)
+        }
+
+        analysis.setOnClickListener {
+            val intent = Intent(this, AnalyticsActivity::class.java)
             startActivity(intent)
         }
 
