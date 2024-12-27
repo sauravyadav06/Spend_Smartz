@@ -218,7 +218,7 @@
                     android:background="@android:color/transparent"
                     android:contentDescription="Analytics"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/analysis"
+                    android:src="@drawable/analysisnew"
                     />
 
                 <!-- Image Button 4 -->

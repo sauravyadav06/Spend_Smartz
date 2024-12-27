@@ -89,7 +89,7 @@
                         android:layout_gravity="center_vertical"
                         android:prompt="@string/select_category"
                         android:popupBackground="@android:color/white"
-                        android:drawableRight="@drawable/down_arrow" />
+                        android:drawableRight="@drawable/expense" />
 
                     <!-- Add Category Button -->
                     <com.google.android.material.button.MaterialButton
