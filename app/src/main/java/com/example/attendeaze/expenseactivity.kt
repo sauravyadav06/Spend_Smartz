@@ -1,5 +1,6 @@
 package com.example.attendeaze
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
@@ -9,10 +10,9 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.google.android.material.button.MaterialButton
 import java.util.Calendar
 
@@ -27,21 +27,14 @@ class ExpenseActivity : AppCompatActivity() {
     private lateinit var incomeExpenseDatabase: IncomeExpenseDatabase
 
     private val categoryPreferences = "CategoryPreferences"
-    private val categoryKey = "categories"
+    private val expenseCategoryKey = "expense_categories"
     private lateinit var predefinedCategories: MutableList<String>
     private lateinit var categoryAdapter: ArrayAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge() // Ensure edge-to-edge is enabled
         setContentView(R.layout.activity_expenseactivity)
-
-        // Set up window insets for edge-to-edge display
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
 
         // Initialize views
         etExpenseAmount = findViewById(R.id.et_expense_amount)
@@ -54,8 +47,8 @@ class ExpenseActivity : AppCompatActivity() {
         // Initialize database helper
         incomeExpenseDatabase = IncomeExpenseDatabase(this)
 
-        // Load categories from SharedPreferences
-        loadCategories()
+        // Load expense categories from SharedPreferences
+        loadExpenseCategories()
 
         // Set up the category spinner
         setupCategorySpinner()
@@ -78,12 +71,22 @@ class ExpenseActivity : AppCompatActivity() {
                 val description = etExpenseDescription.text.toString()
                 val date = etExpenseDate.text.toString()
 
+                // Capture the current time when the Save button is clicked
+                val currentTime = getCurrentTime()
+
                 // Insert the expense data into the database
-                val result = incomeExpenseDatabase.insertExpense(amount, category, description, date)
+                val result = incomeExpenseDatabase.insertExpense(amount, category, description, date, currentTime)
 
                 if (result != -1L) {
                     // Data inserted successfully
                     Toast.makeText(this, "Expense saved successfully!", Toast.LENGTH_SHORT).show()
+
+                    // Notify MainActivity that data was updated
+                    setResult(Activity.RESULT_OK)
+
+                    // Close this activity and return to MainActivity
+                    finish()
+
                     clearInputFields()
                 } else {
                     // Handle database error
@@ -91,6 +94,26 @@ class ExpenseActivity : AppCompatActivity() {
                 }
             }
         }
+
+    }
+
+    // Function to get current time
+    private fun getCurrentTime(): String {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+        val second = calendar.get(Calendar.SECOND)
+
+        // Format the current time as a string
+        return "$hour:$minute:$second"
+    }
+
+    // Enable Edge-to-Edge for full-screen UI
+    private fun enableEdgeToEdge() {
+        // Set the app to be edge-to-edge by enabling window insets
+        val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
+        windowInsetsController.isAppearanceLightStatusBars = true // Customize this if needed
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars()) // Hides system bars
     }
 
     // Set up the category spinner with predefined categories
@@ -122,6 +145,7 @@ class ExpenseActivity : AppCompatActivity() {
     }
 
     // Show dialog to add a new category
+    // Show dialog to add a new category
     private fun showAddCategoryDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Add Category")
@@ -137,9 +161,21 @@ class ExpenseActivity : AppCompatActivity() {
             } else if (predefinedCategories.contains(newCategory)) {
                 Toast.makeText(this, "Category already exists", Toast.LENGTH_SHORT).show()
             } else {
-                predefinedCategories.add(newCategory) // Add to list
-                categoryAdapter.notifyDataSetChanged() // Update spinner
-                saveCategories() // Save updated list to SharedPreferences
+                // Add the new category to the predefinedCategories list
+                predefinedCategories.add(newCategory)
+
+                // Update the spinner adapter with the new category
+                categoryAdapter.add(newCategory)
+                categoryAdapter.notifyDataSetChanged()
+
+                // Set the newly added category as the selected item
+                val newPosition = categoryAdapter.getPosition(newCategory)
+                spinnerExpenseCategory.setSelection(newPosition)
+
+                // Save the updated category list to SharedPreferences
+                saveExpenseCategories()
+
+                // Notify the user that the category has been added
                 Toast.makeText(this, "Category added successfully!", Toast.LENGTH_SHORT).show()
             }
             dialog.dismiss()
@@ -148,6 +184,7 @@ class ExpenseActivity : AppCompatActivity() {
         builder.setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
         builder.show()
     }
+
 
     // Validate input fields (all except description are mandatory)
     private fun validateInput(): Boolean {
@@ -180,24 +217,28 @@ class ExpenseActivity : AppCompatActivity() {
         spinnerExpenseCategory.setSelection(0) // Reset spinner to the first item
     }
 
-    // Save categories to SharedPreferences
-    private fun saveCategories() {
+    // Save expense categories to SharedPreferences
+    private fun saveExpenseCategories() {
         val sharedPreferences = getSharedPreferences(categoryPreferences, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        editor.putStringSet(categoryKey, predefinedCategories.toSet())
+        editor.putStringSet(expenseCategoryKey, predefinedCategories.toSet())
         editor.apply()
     }
 
-    // Load categories from SharedPreferences
-    private fun loadCategories() {
+    // Load expense categories from SharedPreferences
+    private fun loadExpenseCategories() {
         val sharedPreferences = getSharedPreferences(categoryPreferences, Context.MODE_PRIVATE)
-        val savedCategories = sharedPreferences.getStringSet(categoryKey, null)
+        val savedCategories = sharedPreferences.getStringSet(expenseCategoryKey, null)
 
         predefinedCategories = if (savedCategories != null) {
             savedCategories.toMutableList()
         } else {
-            mutableListOf("Food", "Transport", "Bills", "Other") // Default categories
+            mutableListOf("Food", "Transport", "Bills", "Other") // Default expense categories
         }
     }
 }
+
+
+
+
 

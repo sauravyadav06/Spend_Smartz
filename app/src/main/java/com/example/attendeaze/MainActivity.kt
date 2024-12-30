@@ -1,8 +1,8 @@
 package com.example.attendeaze
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -11,7 +11,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,144 +21,148 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnOutcome: ImageButton
     private lateinit var recyclerView: RecyclerView
     private lateinit var transactionAdapter: TransactionAdapter
-    private lateinit var incomeExpenseDatabase: IncomeExpenseDatabase
+    private lateinit var dbHelper: DatabaseHelper
     private lateinit var tvIncomeValue: TextView
     private lateinit var tvExpenseValue: TextView
-    private lateinit var tvTotalBalance: TextView // TextView for total balance
-    private lateinit var seeall:TextView
+    private lateinit var tvTotalBalance: TextView
+    private lateinit var seeAll: TextView
     private lateinit var analysis: ImageButton
+    private lateinit var tvUserName: TextView
+    private val sharedPreferencesName = "UserDetails"
+    private val userNameKey = "user_name"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Enable edge-to-edge display
-        enableEdgeToEdge()
+        // Check if user details are already saved
+        val sharedPreferences = getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
+        val userName = sharedPreferences.getString(userNameKey, null)
 
-        // Set up window insets for edge-to-edge display
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        if (userName == null) {
+            // Redirect to UserInfoActivity if no details are saved
+            val intent = Intent(this, UserInfoActivity::class.java)
+            startActivity(intent)
+            finish() // Close MainActivity to prevent back navigation
+            return
         }
 
-        // Initialize buttons
+        // Initialize views
+        tvUserName = findViewById(R.id.tv_user_name)
         btnIncome = findViewById(R.id.income)
         btnOutcome = findViewById(R.id.expense)
         tvIncomeValue = findViewById(R.id.tv_income_value)
-        tvExpenseValue = findViewById(R.id.tv_expense_value) // Add TextView for expense
-        tvTotalBalance = findViewById(R.id.tv_total_balance) // TextView for total balance
-        seeall= findViewById(R.id.tv_see_all)
-        analysis= findViewById(R.id.btn_analytics)
-
-        seeall.setOnClickListener {
-            val intent = Intent(this, TransactionListActivity::class.java)
-            startActivity(intent)
-        }
-
-
-        // Set up click listeners for navigating to Income and Expense activities
-        btnIncome.setOnClickListener {
-            val intent = Intent(this, IncomeActivity::class.java)
-            startActivity(intent)
-        }
-
-        btnOutcome.setOnClickListener {
-            val intent = Intent(this, ExpenseActivity::class.java)
-            startActivity(intent)
-        }
-
-        analysis.setOnClickListener {
-            val intent = Intent(this, AnalyticsActivity::class.java)
-            startActivity(intent)
-        }
-
-        // Initialize RecyclerView
+        tvExpenseValue = findViewById(R.id.tv_expense_value)
+        tvTotalBalance = findViewById(R.id.tv_total_balance)
+        seeAll = findViewById(R.id.tv_see_all)
+        analysis = findViewById(R.id.btn_analytics)
         recyclerView = findViewById(R.id.recyclerview)
+
+        // Display the user name
+        tvUserName.text = "Welcome, $userName!"
+
+        // Set click listeners for buttons
+        btnIncome.setOnClickListener { startActivity(Intent(this, IncomeActivity::class.java)) }
+        btnOutcome.setOnClickListener { startActivity(Intent(this, ExpenseActivity::class.java)) }
+        seeAll.setOnClickListener { startActivity(Intent(this, SeeAllActivity::class.java)) }
+        analysis.setOnClickListener { startActivity(Intent(this, AnalyticsActivity::class.java)) }
+
+        // Initialize database helper and adapter
+        dbHelper = DatabaseHelper(this)
+        transactionAdapter = TransactionAdapter(emptyList())
         recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = transactionAdapter
 
-        // Initialize the database helper
-        incomeExpenseDatabase = IncomeExpenseDatabase(this)
-
-        // Fetch and set transactions data to the RecyclerView
+        // Load data
         loadTransactions()
+        displayTotalIncome()
+        displayTotalExpense()
+        displayTotalBalance()
+    }
 
-        // Fetch and display total income, expense, and total balance
+    override fun onResume() {
+        super.onResume()
+        loadTransactions()
         displayTotalIncome()
         displayTotalExpense()
         displayTotalBalance()
     }
 
     private fun loadTransactions() {
-        // Fetch the transactions (income and expenses)
-        val transactions = getTransactions()
-
-        // Set up the adapter with the fetched transactions
-        transactionAdapter = TransactionAdapter(transactions)
-        recyclerView.adapter = transactionAdapter
+        val transactions = fetchLatestTransactions()
+        transactionAdapter.updateTransactions(transactions)
     }
 
-    private fun getTransactions(): List<Transaction> {
-        val transactionList = mutableListOf<Transaction>()
+    private fun fetchLatestTransactions(): List<Transaction> {
+        val transactions = mutableListOf<Transaction>()
 
-        // Fetch income data from the database
-        val incomeCursor = incomeExpenseDatabase.getAllIncome()
-        if (incomeCursor.moveToFirst()) {
-            do {
-                val amount = incomeCursor.getDouble(incomeCursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_AMOUNT))
-                val category = incomeCursor.getString(incomeCursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_CATEGORY))
-                val description = incomeCursor.getString(incomeCursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_DESCRIPTION))
-                val date = incomeCursor.getString(incomeCursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_DATE))
+        // Fetch income and expense transactions
+        dbHelper.readableDatabase.use { db ->
+            db.rawQuery("SELECT * FROM ${DatabaseHelper.TABLE_INCOME}", null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    transactions.add(
+                        Transaction(
+                            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_ID)).toString(),
+                            amount = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_AMOUNT)),
+                            category = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_CATEGORY)),
+                            description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_DESCRIPTION)),
+                            date = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_DATE)),
+                            time = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_TIME)),
+                            type = "Income"
+                        )
+                    )
+                }
+            }
 
-                // Add Income transactions with the type "Income"
-                transactionList.add(Transaction(0, amount, category, description, date, "Income"))
-            } while (incomeCursor.moveToNext())
+            db.rawQuery("SELECT * FROM ${DatabaseHelper.TABLE_EXPENSE}", null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    transactions.add(
+                        Transaction(
+                            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_ID)).toString(),
+                            amount = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_AMOUNT)),
+                            category = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_CATEGORY)),
+                            description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_DESCRIPTION)),
+                            date = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_DATE)),
+                            time = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_TIME)),
+                            type = "Expense"
+                        )
+                    )
+                }
+            }
         }
-        incomeCursor.close()
 
-        // Fetch expense data from the database
-        val expenseCursor = incomeExpenseDatabase.getAllExpenses()
-        if (expenseCursor.moveToFirst()) {
-            do {
-                val amount = expenseCursor.getDouble(expenseCursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_AMOUNT))
-                val category = expenseCursor.getString(expenseCursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_CATEGORY))
-                val description = expenseCursor.getString(expenseCursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_DESCRIPTION))
-                val date = expenseCursor.getString(expenseCursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_DATE))
-
-                // Add Expense transactions with the type "Expense"
-                transactionList.add(Transaction(0, amount, category, description, date, "Expense"))
-            } while (expenseCursor.moveToNext())
-        }
-        expenseCursor.close()
-
-        return transactionList
+        // Sort transactions by date and time
+        return transactions.sortedWith(
+            compareByDescending<Transaction> { it.date }
+                .thenByDescending { it.time }
+        )
     }
 
     private fun displayTotalIncome() {
-        // Fetch total income from the database
-        val totalIncome = incomeExpenseDatabase.getTotalIncome()
+        val totalIncome = dbHelper.readableDatabase.rawQuery(
+            "SELECT SUM(${DatabaseHelper.COLUMN_INCOME_AMOUNT}) FROM ${DatabaseHelper.TABLE_INCOME}",
+            null
+        ).use { if (it.moveToFirst()) it.getDouble(0) else 0.0 }
 
-        // Display the total income in the TextView
-        tvIncomeValue.text = "₹${totalIncome}"
+        tvIncomeValue.text = "₹$totalIncome"
     }
 
     private fun displayTotalExpense() {
-        // Fetch total expense from the database
-        val totalExpense = incomeExpenseDatabase.getTotalExpense()
+        val totalExpense = dbHelper.readableDatabase.rawQuery(
+            "SELECT SUM(${DatabaseHelper.COLUMN_EXPENSE_AMOUNT}) FROM ${DatabaseHelper.TABLE_EXPENSE}",
+            null
+        ).use { if (it.moveToFirst()) it.getDouble(0) else 0.0 }
 
-        // Display the total expense in the TextView
-        tvExpenseValue.text = "₹${totalExpense}"
+        tvExpenseValue.text = "₹$totalExpense"
     }
 
     private fun displayTotalBalance() {
-        // Fetch total income and total expense
-        val totalIncome = incomeExpenseDatabase.getTotalIncome()
-        val totalExpense = incomeExpenseDatabase.getTotalExpense()
-
-        // Calculate the balance (income - expense)
-        val totalBalance = totalIncome - totalExpense
-
-        // Display the total balance in the TextView
-        tvTotalBalance.text = "₹${totalBalance}"
+        val totalIncome = tvIncomeValue.text.toString().replace("₹", "").toDoubleOrNull() ?: 0.0
+        val totalExpense = tvExpenseValue.text.toString().replace("₹", "").toDoubleOrNull() ?: 0.0
+        tvTotalBalance.text = "₹${totalIncome - totalExpense}"
     }
 }
+
+
+
+

@@ -8,7 +8,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     companion object {
         private const val DATABASE_NAME = "expense_tracker.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
 
         // Table names and column names for both income and expense
         const val TABLE_INCOME = "income"
@@ -20,6 +20,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COLUMN_INCOME_CATEGORY = "income_category"
         const val COLUMN_INCOME_DESCRIPTION = "income_description"
         const val COLUMN_INCOME_DATE = "income_date"
+        const val COLUMN_INCOME_TIME = "income_time"
 
         // Expense table column names
         const val COLUMN_EXPENSE_ID = "expense_id"
@@ -27,6 +28,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         const val COLUMN_EXPENSE_CATEGORY = "expense_category"
         const val COLUMN_EXPENSE_DESCRIPTION = "expense_description"
         const val COLUMN_EXPENSE_DATE = "expense_date"
+        const val COLUMN_EXPENSE_TIME = "expense_time"
 
         // SQL statements to create the income and expense tables with distinct column names
         private const val CREATE_TABLE_INCOME = """
@@ -35,7 +37,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 $COLUMN_INCOME_AMOUNT REAL,
                 $COLUMN_INCOME_CATEGORY TEXT,
                 $COLUMN_INCOME_DESCRIPTION TEXT,
-                $COLUMN_INCOME_DATE TEXT
+                $COLUMN_INCOME_DATE TEXT,
+                $COLUMN_INCOME_TIME TEXT
             )
         """
 
@@ -45,7 +48,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 $COLUMN_EXPENSE_AMOUNT REAL,
                 $COLUMN_EXPENSE_CATEGORY TEXT,
                 $COLUMN_EXPENSE_DESCRIPTION TEXT,
-                $COLUMN_EXPENSE_DATE TEXT
+                $COLUMN_EXPENSE_DATE TEXT,
+                $COLUMN_EXPENSE_TIME TEXT
             )
         """
     }

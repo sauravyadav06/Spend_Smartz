@@ -1,5 +1,6 @@
 package com.example.attendeaze
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
@@ -15,6 +16,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.button.MaterialButton
 import java.util.Calendar
+
+
 class IncomeActivity : AppCompatActivity() {
 
     private lateinit var etIncomeAmount: EditText
@@ -25,10 +28,10 @@ class IncomeActivity : AppCompatActivity() {
     private lateinit var btnAddCategory: MaterialButton
     private lateinit var incomeExpenseDatabase: IncomeExpenseDatabase
 
-    private val categoryPreferences = "CategoryPreferences"
-    private val categoryKey = "categories"
-    private lateinit var predefinedCategories: MutableList<String>
-    private lateinit var categoryAdapter: ArrayAdapter<String>
+    private val incomeCategoryPreferences = "IncomeCategoryPreferences"
+    private val incomeCategoryKey = "income_categories"
+    private lateinit var predefinedIncomeCategories: MutableList<String>
+    private lateinit var incomeCategoryAdapter: ArrayAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,11 +56,11 @@ class IncomeActivity : AppCompatActivity() {
         // Initialize database helper
         incomeExpenseDatabase = IncomeExpenseDatabase(this)
 
-        // Load categories from SharedPreferences
-        loadCategories()
+        // Load income categories from SharedPreferences
+        loadIncomeCategories()
 
         // Set up the category spinner
-        setupCategorySpinner()
+        setupIncomeCategorySpinner()
 
         // Show date picker dialog when clicking on the date field
         etIncomeDate.setOnClickListener {
@@ -66,7 +69,7 @@ class IncomeActivity : AppCompatActivity() {
 
         // Handle Add Category button
         btnAddCategory.setOnClickListener {
-            showAddCategoryDialog()
+            showAddIncomeCategoryDialog()
         }
 
         // Save income data when button is clicked
@@ -77,12 +80,22 @@ class IncomeActivity : AppCompatActivity() {
                 val description = etIncomeDescription.text.toString()
                 val date = etIncomeDate.text.toString()
 
+                // Capture the current time when the Save button is clicked
+                val currentTime = getCurrentTime()
+
                 // Insert the income data into the database
-                val result = incomeExpenseDatabase.insertIncome(amount, category, description, date)
+                val result = incomeExpenseDatabase.insertIncome(amount, category, description, date, currentTime)
 
                 if (result != -1L) {
                     // Data inserted successfully
                     Toast.makeText(this, "Income saved successfully!", Toast.LENGTH_SHORT).show()
+
+                    // Notify MainActivity that data was updated
+                    setResult(Activity.RESULT_OK)
+
+                    // Close this activity and return to MainActivity
+                    finish()
+
                     clearInputFields()
                 } else {
                     // Handle database error
@@ -92,18 +105,17 @@ class IncomeActivity : AppCompatActivity() {
         }
     }
 
-    // Set up the category spinner with predefined categories
-    private fun setupCategorySpinner() {
+    // Set up the category spinner with predefined income categories
+    private fun setupIncomeCategorySpinner() {
         // Adding the default "Select Category" to the list of categories
         val categoriesWithDefault = mutableListOf("Select Category").apply {
-            addAll(predefinedCategories)
+            addAll(predefinedIncomeCategories)
         }
 
-        categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categoriesWithDefault)
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerIncomeCategory.adapter = categoryAdapter
+        incomeCategoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categoriesWithDefault)
+        incomeCategoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerIncomeCategory.adapter = incomeCategoryAdapter
     }
-
 
     // Show DatePickerDialog
     private fun showDatePickerDialog(editText: EditText) {
@@ -121,10 +133,10 @@ class IncomeActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
-    // Show dialog to add a new category
-    private fun showAddCategoryDialog() {
+    // Show dialog to add a new income category
+    private fun showAddIncomeCategoryDialog() {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Add Category")
+        builder.setTitle("Add Income Category")
 
         val input = EditText(this)
         input.hint = "Category Name"
@@ -134,12 +146,23 @@ class IncomeActivity : AppCompatActivity() {
             val newCategory = input.text.toString().trim()
             if (newCategory.isEmpty()) {
                 Toast.makeText(this, "Category name cannot be empty", Toast.LENGTH_SHORT).show()
-            } else if (predefinedCategories.contains(newCategory)) {
+            } else if (predefinedIncomeCategories.contains(newCategory)) {
                 Toast.makeText(this, "Category already exists", Toast.LENGTH_SHORT).show()
             } else {
-                predefinedCategories.add(newCategory) // Add to list
-                categoryAdapter.notifyDataSetChanged() // Update spinner
-                saveCategories() // Save updated list to SharedPreferences
+                // Add the new category to the list
+                predefinedIncomeCategories.add(newCategory)
+
+                // Save the updated list to SharedPreferences
+                saveIncomeCategories()
+
+                // Immediately update the adapter and spinner
+                incomeCategoryAdapter.clear()
+                incomeCategoryAdapter.addAll(predefinedIncomeCategories)
+                incomeCategoryAdapter.notifyDataSetChanged()
+
+                // Set the spinner to the new category
+                spinnerIncomeCategory.setSelection(predefinedIncomeCategories.size - 1)
+
                 Toast.makeText(this, "Category added successfully!", Toast.LENGTH_SHORT).show()
             }
             dialog.dismiss()
@@ -180,26 +203,41 @@ class IncomeActivity : AppCompatActivity() {
         spinnerIncomeCategory.setSelection(0) // Reset spinner to the first item
     }
 
-    // Save categories to SharedPreferences
-    private fun saveCategories() {
-        val sharedPreferences = getSharedPreferences(categoryPreferences, Context.MODE_PRIVATE)
+    // Save income categories to SharedPreferences
+    private fun saveIncomeCategories() {
+        val sharedPreferences = getSharedPreferences(incomeCategoryPreferences, Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        editor.putStringSet(categoryKey, predefinedCategories.toSet())
+        editor.putStringSet(incomeCategoryKey, predefinedIncomeCategories.toSet())
         editor.apply()
     }
 
-    // Load categories from SharedPreferences
-    private fun loadCategories() {
-        val sharedPreferences = getSharedPreferences(categoryPreferences, Context.MODE_PRIVATE)
-        val savedCategories = sharedPreferences.getStringSet(categoryKey, null)
+    // Load income categories from SharedPreferences
+    private fun loadIncomeCategories() {
+        val sharedPreferences = getSharedPreferences(incomeCategoryPreferences, Context.MODE_PRIVATE)
+        val savedCategories = sharedPreferences.getStringSet(incomeCategoryKey, null)
 
-        predefinedCategories = if (savedCategories != null) {
+        predefinedIncomeCategories = if (savedCategories != null) {
             savedCategories.toMutableList()
         } else {
-            mutableListOf("Salary", "Freelancing", "Investment", "Other") // Default categories
+            mutableListOf("Salary", "Freelancing", "Investment", "Other") // Default income categories
         }
     }
+
+    // Function to get current time
+    private fun getCurrentTime(): String {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val minute = calendar.get(Calendar.MINUTE)
+        val second = calendar.get(Calendar.SECOND)
+
+        // Format the current time as a string
+        return "$hour:$minute:$second"
+    }
 }
+
+
+
+
 
 
 

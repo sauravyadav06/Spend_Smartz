@@ -13,10 +13,13 @@
         android:theme="@style/Theme.AttendEaze"
         tools:targetApi="31">
         <activity
-            android:name=".AnalyticsActivity"
+            android:name=".UserInfoActivity"
             android:exported="false" />
         <activity
-            android:name=".TransactionListActivity"
+            android:name=".SeeAllActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AnalyticsActivity"
             android:exported="false" />
         <activity
             android:name=".IncomeActivity"
