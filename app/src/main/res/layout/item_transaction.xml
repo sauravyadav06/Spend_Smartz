@@ -36,6 +36,7 @@
             app:layout_constraintStart_toStartOf="@id/tv_transaction_amount" />
 
         <!-- Time -->
+        <!--
         <TextView
             android:id="@+id/tv_transaction_time"
             android:layout_width="wrap_content"
@@ -45,13 +46,14 @@
             android:textColor="@color/black"
             app:layout_constraintTop_toBottomOf="@id/tv_transaction_date"
             app:layout_constraintStart_toStartOf="@id/tv_transaction_date" />
+        -->
 
         <!-- Category -->
         <TextView
             android:id="@+id/tv_transaction_category"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Category: Food"
+            android:text="Food"
             android:textStyle="bold"
             android:textColor="@color/black"
             app:layout_constraintTop_toTopOf="parent"
@@ -65,7 +67,7 @@
             android:layout_height="wrap_content"
             android:text="Description: Lunch with colleagues"
             android:textColor="@color/black"
-            app:layout_constraintTop_toBottomOf="@id/tv_transaction_time"
+            app:layout_constraintTop_toBottomOf="@id/tv_transaction_date"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

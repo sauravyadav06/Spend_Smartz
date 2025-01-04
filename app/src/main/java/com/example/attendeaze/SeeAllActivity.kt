@@ -5,6 +5,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.Spinner
+import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -127,7 +128,7 @@ class SeeAllActivity : AppCompatActivity() {
 
         // Set up the Spinners with data
         val categoryOptions = arrayOf("All", "Income", "Expense")
-        val dateRangeOptions = arrayOf("Today", "Yesterday", "One Month")
+        val dateRangeOptions = arrayOf("This Month", "Last Month", "Last 3 Months", "Last 6 Months", "All Time")
 
         categorySpinner.adapter =
             ArrayAdapter(this, android.R.layout.simple_spinner_item, categoryOptions)
@@ -159,6 +160,7 @@ class SeeAllActivity : AppCompatActivity() {
         transactionAdapter.updateTransactions(filteredTransactions)
     }
 
+
     private fun filterTransactions(category: String, dateRange: String): List<Transaction> {
         val filteredList = mutableListOf<Transaction>()
         val currentDate = SimpleDateFormat(
@@ -166,39 +168,51 @@ class SeeAllActivity : AppCompatActivity() {
             Locale.getDefault()
         ).format(Date()) // Current date as yyyy-MM-dd
 
+//        for (transaction in allTransactions) {
+//            // Filter by category
+//            if (category != "All" && transaction.type != category) continue
+//
+//            // Get the transaction date (ensure it is in the right format)
+//            val transactionDate =
+//                transaction.date // Assuming transaction.date is already in 'yyyy-MM-dd' format
+//
+//            // Filter by date range
+//            when (dateRange) {
+//                "Today" -> {
+//                    // Ensure currentDate and transactionDate are both in the same format before comparing
+//                    if (transactionDate != currentDate) continue
+//                }
+//
+//                "Yesterday" -> {
+//                    val yesterday = Calendar.getInstance()
+//                    yesterday.add(Calendar.DATE, -1)
+//                    val yesterdayDate =
+//                        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(yesterday.time)
+//                    if (transactionDate != yesterdayDate) continue
+//                }
+//
+//                "One Month" -> {
+//                    val oneMonthAgo = Calendar.getInstance()
+//                    oneMonthAgo.add(Calendar.MONTH, -1)
+//                    val oneMonthAgoDate =
+//                        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(oneMonthAgo.time)
+//                    if (transactionDate < oneMonthAgoDate) continue
+//                }
+//            }
+//
+//            // Add to filtered list if it matches
+//            filteredList.add(transaction)
+//        }
         for (transaction in allTransactions) {
-            // Filter by category
-            if (category != "All" && transaction.type != category) continue
+           when (category) {
+               "All" ->  {
+                   when (dateRange){
+                      "Today" ->{
 
-            // Get the transaction date (ensure it is in the right format)
-            val transactionDate =
-                transaction.date // Assuming transaction.date is already in 'yyyy-MM-dd' format
-
-            // Filter by date range
-            when (dateRange) {
-                "Today" -> {
-                    // Ensure currentDate and transactionDate are both in the same format before comparing
-                    if (transactionDate != currentDate) continue
-                }
-
-                "Yesterday" -> {
-                    val yesterday = Calendar.getInstance()
-                    yesterday.add(Calendar.DATE, -1)
-                    val yesterdayDate =
-                        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(yesterday.time)
-                    if (transactionDate != yesterdayDate) continue
-                }
-
-                "One Month" -> {
-                    val oneMonthAgo = Calendar.getInstance()
-                    oneMonthAgo.add(Calendar.MONTH, -1)
-                    val oneMonthAgoDate =
-                        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(oneMonthAgo.time)
-                    if (transactionDate < oneMonthAgoDate) continue
-                }
-            }
-
-            // Add to filtered list if it matches
+                      }
+                   }
+               }
+           }
             filteredList.add(transaction)
         }
 

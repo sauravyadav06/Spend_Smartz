@@ -193,5 +193,24 @@ class IncomeExpenseDatabase(context: Context) {
         cursor.close()
         return totalExpense
     }
+    fun getAllTransaction(): Cursor {
+        val db = dbHelper.readableDatabase
+        return db.query(
+            DatabaseHelper.TABLE_INCOME, // Table name
+            arrayOf(
+                DatabaseHelper.COLUMN_INCOME_ID,
+                DatabaseHelper.COLUMN_INCOME_AMOUNT,
+                DatabaseHelper.COLUMN_INCOME_CATEGORY,
+                DatabaseHelper.COLUMN_INCOME_DESCRIPTION,
+                DatabaseHelper.COLUMN_INCOME_DATE,
+                DatabaseHelper.COLUMN_INCOME_TIME        // Include the time column
+            ),
+            null, // No selection criteria
+            null, // No selection args
+            null, // No group by
+            null, // No having
+            "${DatabaseHelper.COLUMN_INCOME_TIME} DESC" // Order by time descending
+        )
+    }
 
 }

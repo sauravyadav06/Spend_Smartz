@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnOutcome: ImageButton
     private lateinit var recyclerView: RecyclerView
     private lateinit var transactionAdapter: TransactionAdapter
-    private lateinit var dbHelper: DatabaseHelper
+    private lateinit var incomeExpenseDatabase: IncomeExpenseDatabase // Use helper class
     private lateinit var tvIncomeValue: TextView
     private lateinit var tvExpenseValue: TextView
     private lateinit var tvTotalBalance: TextView
@@ -67,8 +67,8 @@ class MainActivity : AppCompatActivity() {
         seeAll.setOnClickListener { startActivity(Intent(this, SeeAllActivity::class.java)) }
         analysis.setOnClickListener { startActivity(Intent(this, AnalyticsActivity::class.java)) }
 
-        // Initialize database helper and adapter
-        dbHelper = DatabaseHelper(this)
+        // Initialize IncomeExpenseDatabase
+        incomeExpenseDatabase = IncomeExpenseDatabase(this)
         transactionAdapter = TransactionAdapter(emptyList())
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = transactionAdapter
@@ -89,79 +89,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadTransactions() {
-        val transactions = fetchLatestTransactions()
+        // Use the helper class to fetch all transactions sorted
+        val transactions = incomeExpenseDatabase.getAllTransactionsSorted()
         transactionAdapter.updateTransactions(transactions)
     }
 
-    private fun fetchLatestTransactions(): List<Transaction> {
-        val transactions = mutableListOf<Transaction>()
-
-        // Fetch income and expense transactions
-        dbHelper.readableDatabase.use { db ->
-            db.rawQuery("SELECT * FROM ${DatabaseHelper.TABLE_INCOME}", null).use { cursor ->
-                while (cursor.moveToNext()) {
-                    transactions.add(
-                        Transaction(
-                            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_ID)).toString(),
-                            amount = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_AMOUNT)),
-                            category = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_CATEGORY)),
-                            description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_DESCRIPTION)),
-                            date = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_DATE)),
-                            time = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCOME_TIME)),
-                            type = "Income"
-                        )
-                    )
-                }
-            }
-
-            db.rawQuery("SELECT * FROM ${DatabaseHelper.TABLE_EXPENSE}", null).use { cursor ->
-                while (cursor.moveToNext()) {
-                    transactions.add(
-                        Transaction(
-                            id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_ID)).toString(),
-                            amount = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_AMOUNT)),
-                            category = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_CATEGORY)),
-                            description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_DESCRIPTION)),
-                            date = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_DATE)),
-                            time = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_EXPENSE_TIME)),
-                            type = "Expense"
-                        )
-                    )
-                }
-            }
-        }
-
-        // Sort transactions by date and time
-        return transactions.sortedWith(
-            compareByDescending<Transaction> { it.date }
-                .thenByDescending { it.time }
-        )
-    }
-
     private fun displayTotalIncome() {
-        val totalIncome = dbHelper.readableDatabase.rawQuery(
-            "SELECT SUM(${DatabaseHelper.COLUMN_INCOME_AMOUNT}) FROM ${DatabaseHelper.TABLE_INCOME}",
-            null
-        ).use { if (it.moveToFirst()) it.getDouble(0) else 0.0 }
-
+        // Use the helper class method to get total income
+        val totalIncome = incomeExpenseDatabase.getTotalIncome()
         tvIncomeValue.text = "₹$totalIncome"
     }
 
     private fun displayTotalExpense() {
-        val totalExpense = dbHelper.readableDatabase.rawQuery(
-            "SELECT SUM(${DatabaseHelper.COLUMN_EXPENSE_AMOUNT}) FROM ${DatabaseHelper.TABLE_EXPENSE}",
-            null
-        ).use { if (it.moveToFirst()) it.getDouble(0) else 0.0 }
-
+        // Use the helper class method to get total expenses
+        val totalExpense = incomeExpenseDatabase.getTotalExpense()
         tvExpenseValue.text = "₹$totalExpense"
     }
 
     private fun displayTotalBalance() {
+        // Calculate the total balance by subtracting total expenses from total income
         val totalIncome = tvIncomeValue.text.toString().replace("₹", "").toDoubleOrNull() ?: 0.0
         val totalExpense = tvExpenseValue.text.toString().replace("₹", "").toDoubleOrNull() ?: 0.0
         tvTotalBalance.text = "₹${totalIncome - totalExpense}"
     }
 }
+
 
 
 
