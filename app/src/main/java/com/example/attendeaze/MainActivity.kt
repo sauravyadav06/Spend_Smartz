@@ -1,6 +1,5 @@
 package com.example.attendeaze
 
-
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -15,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-
 
 class MainActivity : AppCompatActivity() {
 
