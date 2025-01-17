@@ -40,7 +40,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-
                 android:padding="16dp">
 
                 <TextView
@@ -133,6 +132,16 @@
             app:layout_constraintTop_toBottomOf="@id/card_total_balance"
             app:layout_constraintStart_toStartOf="parent" />
 
+        <!-- Spinner for Date Filter -->
+        <Spinner
+            android:id="@+id/date_filter_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:entries="@array/date_filter_options"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_recent_transactions" />
+
         <TextView
             android:id="@+id/tv_see_all"
             android:layout_width="wrap_content"
@@ -150,7 +159,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_margin="16dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_recent_transactions"
+            app:layout_constraintTop_toBottomOf="@id/date_filter_spinner"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/card_bottom_buttons" />
@@ -194,8 +203,7 @@
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:contentDescription="Home"
-                    android:scaleType="fitCenter"
-                    />
+                    android:scaleType="fitCenter" />
 
                 <!-- Image Button 3 -->
                 <ImageButton
@@ -206,8 +214,7 @@
                     android:background="@android:color/transparent"
                     android:contentDescription="Analytics"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/analysisnew"
-                    />
+                    android:src="@drawable/analysisnew" />
 
                 <!-- Image Button 4 -->
                 <ImageButton
@@ -217,8 +224,7 @@
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:contentDescription="Export to Excel"
-                    android:scaleType="fitCenter"
-                     />
+                    android:scaleType="fitCenter" />
 
                 <!-- Image Button 5 -->
                 <ImageButton
@@ -230,13 +236,7 @@
                     android:contentDescription="Expense"
                     android:scaleType="fitCenter"
                     android:src="@drawable/expense" />
-
             </LinearLayout>
-
         </androidx.cardview.widget.CardView>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-

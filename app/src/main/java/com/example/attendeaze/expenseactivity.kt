@@ -144,7 +144,7 @@ class ExpenseActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
-    // Show dialog to add a new category
+
     // Show dialog to add a new category
     private fun showAddCategoryDialog() {
         val builder = AlertDialog.Builder(this)
@@ -237,8 +237,4 @@ class ExpenseActivity : AppCompatActivity() {
         }
     }
 }
-
-
-
-
 

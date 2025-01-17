@@ -1,4 +1,21 @@
 <resources>
     <string name="app_name">Attend Eaze</string>
     <string name="select_category">Select Category</string>
+
+    <string-array name="months_array">
+        <item>All Time</item>
+        <item>January</item>
+        <item>February</item>
+        <item>March</item>
+        <item>April</item>
+        <item>May</item>
+        <item>June</item>
+        <item>July</item>
+        <item>August</item>
+        <item>September</item>
+        <item>October</item>
+        <item>November</item>
+        <item>December</item>
+    </string-array>
+
 </resources>
